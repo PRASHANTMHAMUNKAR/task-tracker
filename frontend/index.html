@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Tracker</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 520px; margin: 2rem auto; padding: 0 1rem; }
+      form { display: flex; gap: .5rem; }
+      input { flex: 1; padding: .5rem; }
+      li { display: flex; gap: .5rem; align-items: center; padding: .4rem 0; }
+      li.done span { text-decoration: line-through; color: #888; }
+      li span { flex: 1; cursor: pointer; }
+      #error { color: #b00020; }
+    </style>
+  </head>
+  <body>
+    <h1>Task Tracker</h1>
+    <form id="form">
+      <input id="title" placeholder="New task" maxlength="100" />
+      <button type="submit">Add</button>
+    </form>
+    <p id="error"></p>
+    <ul id="list"></ul>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
