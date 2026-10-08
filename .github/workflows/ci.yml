@@ -7,7 +7,6 @@ on:
 
 env:
   DOCKERHUB_USERNAME: prashantmhamunkar
-  IMAGE_NAME: tasktracker-app
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
@@ -25,11 +24,17 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build Docker Image
-        run: docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG .
+      - name: Build Frontend Docker Image
+        run: docker build -t $DOCKERHUB_USERNAME/tasktracker-frontend:$IMAGE_TAG ./frontend
 
-      - name: Push Image to Docker Hub
-        run: docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
+      - name: Build Backend Docker Image
+        run: docker build -t $DOCKERHUB_USERNAME/tasktracker-backend:$IMAGE_TAG ./backend
+
+      - name: Push Frontend Image to Docker Hub
+        run: docker push $DOCKERHUB_USERNAME/tasktracker-frontend:$IMAGE_TAG
+
+      - name: Push Backend Image to Docker Hub
+        run: docker push $DOCKERHUB_USERNAME/tasktracker-backend:$IMAGE_TAG
 
   Pull-Deploy:
     name: Pull Image and Deploy the App
@@ -43,7 +48,10 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Pull Image
-        run: docker pull $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
+        run: docker pull $DOCKERHUB_USERNAME/tasktracker-frontend:$IMAGE_TAG
+
+      - name: Pull Image
+        run: docker pull $DOCKERHUB_USERNAME/tasktracker-backend:$IMAGE_TAG  
 
 
 
