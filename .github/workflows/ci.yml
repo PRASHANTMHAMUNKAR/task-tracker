@@ -3,12 +3,10 @@ on:
   push:
     branches: 
       - main
-
-
 env:
   DOCKERHUB_USERNAME: prashantmhamunkar
   IMAGE_TAG: ${{ github.sha }}
-  LOCAL_SERVER: ${{ LOCAL_SERVER }}
+ 
 jobs:
 
   build-push:
@@ -39,12 +37,23 @@ jobs:
   deploy-with-ssh:
     name: Deploy App to local server
     runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ github.sha }} 
+      SSH_PRIVATE_KEY: ${{ secrets.LOCAL_SERVER }}
+    needs: build-push  
     
     steps:
-      - name: ssh login & deploy 
+      - name: configure SSH 
         run: |
-          ssh -i ${{ LOCAL_SERVER }} ubuntu@202.179.85.189
-          cd /home/ubuntu/task-tracker-prod-app
-          docker compose down
-          docker compose up -d -f docker-compose-prod.yml
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/local_server
+          chmod 600 ~/.ssh/local_server
+          ssh-keyscan -H 202.179.85.189 >> ~/.ssh/known_hosts
+
+      - name: Deploy app to Local server
+        run: |
+          ssh -i ~/.ssh/local_server ubuntu@202.179.85.189 \
+          "cd /home/ubuntu/task-tracker-prod-app &&
+           IMAGE_TAG=$IMAGE_TAG docker compose -f docker-compose.prod.yml pull &&   
+           IMAGE_TAG=$IMAGE_TAG docker compose -f docker-compose.prod.yml up -d "
 
