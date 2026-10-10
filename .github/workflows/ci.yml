@@ -39,20 +39,20 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_TAG: ${{ github.sha }} 
-      SSH_PRIVATE_KEY: ${{ secrets.LOCAL_SERVER }}
+      SSH_PRIVATE_KEY: ${{ secrets.EC2_TASKTRACKER_PRIVATEKEY }}
     needs: build-push  
     
     steps:
       - name: configure SSH 
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/local_server
-          chmod 600 ~/.ssh/local_server
-          ssh-keyscan -H 202.179.85.189 >> ~/.ssh/known_hosts
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/EC2_TASKTRACKER_PRIVATEKEY
+          chmod 600 ~/.ssh/EC2_TASKTRACKER_PRIVATEKEY
+          ssh-keyscan -H 3.81.120.75 >> ~/.ssh/known_hosts
 
       - name: Deploy app to Local server
         run: |
-          ssh -i ~/.ssh/local_server ubuntu@202.179.85.189 \
+          ssh -i ~/.ssh/EC2_TASKTRACKER_PRIVATEKEY ubuntu@3.81.120.75 \
           "cd /home/ubuntu/task-tracker-prod-app &&
            IMAGE_TAG=$IMAGE_TAG docker compose -f docker-compose.prod.yml pull &&   
            IMAGE_TAG=$IMAGE_TAG docker compose -f docker-compose.prod.yml up -d "
