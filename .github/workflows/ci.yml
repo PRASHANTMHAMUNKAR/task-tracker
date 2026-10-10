@@ -8,7 +8,7 @@ on:
 env:
   DOCKERHUB_USERNAME: prashantmhamunkar
   IMAGE_TAG: ${{ github.sha }}
-
+  LOCAL_SERVER: ${{ LOCAL_SERVER }}
 jobs:
 
   build-push:
@@ -36,24 +36,15 @@ jobs:
       - name: Push Backend Image to Docker Hub
         run: docker push $DOCKERHUB_USERNAME/tasktracker-backend:$IMAGE_TAG
 
-  Pull-Deploy:
-    name: Pull Image and Deploy the App
+  deploy-with-ssh:
+    name: Deploy App to local server
     runs-on: ubuntu-latest
-    needs: build-push  
+    
     steps:
-      - name: Docker Login
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Pull Image
-        run: docker pull $DOCKERHUB_USERNAME/tasktracker-frontend:$IMAGE_TAG
-
-      - name: Pull Image
-        run: docker pull $DOCKERHUB_USERNAME/tasktracker-backend:$IMAGE_TAG  
-
-
-
-        
+      - name: ssh login & deploy 
+        run: |
+          ssh -i ${{ LOCAL_SERVER }} ubuntu@202.179.85.189
+          cd /home/ubuntu/task-tracker-prod-app
+          docker compose down
+          docker compose up -d -f docker-compose-prod.yml
 
