@@ -1,0 +1,68 @@
+services:
+  tasktracker-frontend:
+    image: prashantmhamunkar/tasktracker-frontend:${IMAGE_TAG}
+    ports:
+      - "8081:80"
+    networks:
+      - tasktracker-network  
+    depends_on:
+      tasktracker-backend:
+        condition: service_healthy  
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  tasktracker-backend:
+    image: prashantmhamunkar/tasktracker-backend:${IMAGE_TAG}
+    ports:
+      - "5000:5000"
+    networks:
+      - tasktracker-network
+    environment:
+      DB_HOST: "tasktracker-db"
+      DB_PORT: "5432"
+      DB_NAME: "tasktrackerdb"
+      DB_USER: "tasktracker"
+      DB_PASSWORD: "tasktracker"
+    depends_on:
+      tasktracker-db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/api/health')"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  tasktracker-db:
+    image: postgres:16
+    environment: 
+      POSTGRES_DB: tasktrackerdb
+      POSTGRES_USER: tasktracker
+      POSTGRES_PASSWORD: tasktracker
+    networks:
+      - tasktracker-network
+    volumes:
+      - tasktracker-db-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql  
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]      
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+networks:
+  tasktracker-network:
+    driver: bridge
+
+volumes:
+  tasktracker-db-data:
+      
+
